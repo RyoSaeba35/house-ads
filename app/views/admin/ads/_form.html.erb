@@ -1,0 +1,79 @@
+<%= form_with model: [:admin, ad], multipart: true, class: "card form" do |f| %>
+  <% if ad.errors.any? %>
+    <div class="errors">
+      <strong>Please fix:</strong>
+      <ul>
+        <% ad.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid">
+    <label class="span2">Name
+      <%= f.text_field :name, required: true, placeholder: "Booking.com summer deals" %>
+      <small>Internal name, also used as alt text if none is set.</small>
+    </label>
+
+    <label class="span2">Target URL
+      <%= f.url_field :target_url, required: true, placeholder: "https://play.google.com/store/apps/details?id=..." %>
+      <small>Your app's store page, your website, or an affiliate link.</small>
+    </label>
+
+    <label class="span2">Image
+      <% if ad.image.attached? && ad.image.persisted? %>
+        <div class="current-image"><%= ad_thumb(ad, "preview-img") %></div>
+      <% end %>
+      <%= f.file_field :image, accept: Ad::IMAGE_TYPES.join(",") %>
+      <small>PNG, JPEG, WebP or GIF, max 2 MB. Suggested: banner 1200×200, square 1080×1080, interstitial 1080×1920.</small>
+    </label>
+
+    <label>Placement
+      <%= f.select :placement, Ad::PLACEMENTS.map { |p| [p.capitalize, p] } %>
+    </label>
+
+    <label>Weight (1 to 100)
+      <%= f.number_field :weight, min: 1, max: 100, step: 1 %>
+      <small>Higher weight = shown more often.</small>
+    </label>
+
+    <label>Starts at
+      <%= f.datetime_local_field :starts_at %>
+      <small>Optional.</small>
+    </label>
+
+    <label>Ends at
+      <%= f.datetime_local_field :ends_at %>
+      <small>Optional.</small>
+    </label>
+
+    <label>Only show in
+      <%= f.text_field :app_keys_list, placeholder: "fidele, sideby, portfolio" %>
+      <small>App keys, comma separated. Empty = everywhere.</small>
+    </label>
+
+    <label>Hide in
+      <%= f.text_field :target_app_key, placeholder: "fidele" %>
+      <small>If this ad promotes one of your apps, put its key to hide it inside that app.</small>
+    </label>
+
+    <label>Label
+      <%= f.text_field :label, maxlength: 30 %>
+      <small>"Publicité" or "Lien affilié" (required by French law).</small>
+    </label>
+
+    <label>Alt text
+      <%= f.text_field :alt_text, placeholder: "Accessibility description" %>
+    </label>
+
+    <label class="check span2">
+      <%= f.check_box :active %> Active
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit ad.new_record? ? "Create ad" : "Save changes", class: "btn" %>
+    <%= link_to "Cancel", ad.persisted? ? admin_ad_path(ad) : admin_ads_path, class: "btn ghost" %>
+  </div>
+<% end %>

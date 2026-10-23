@@ -1,0 +1,20 @@
+test:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+
+# Local disk (dev, or production with a Railway volume mounted on /rails/storage)
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+
+# Wasabi (S3-compatible). Endpoint must match the bucket's region,
+# e.g. eu-west-2 (Paris) -> https://s3.eu-west-2.wasabisys.com
+wasabi:
+  service: S3
+  endpoint: <%= ENV.fetch("WASABI_ENDPOINT") { "https://s3.#{ENV.fetch('WASABI_REGION', 'eu-west-2')}.wasabisys.com" } %>
+  region: <%= ENV.fetch("WASABI_REGION", "eu-west-2") %>
+  bucket: <%= ENV["WASABI_BUCKET"] %>
+  access_key_id: <%= ENV["WASABI_ACCESS_KEY_ID"] %>
+  secret_access_key: <%= ENV["WASABI_SECRET_ACCESS_KEY"] %>
+  request_checksum_calculation: "when_required"
+  response_checksum_validation: "when_required"

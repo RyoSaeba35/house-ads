@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "House Ads" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag "admin" %>
+  </head>
+  <body>
+    <header class="top">
+      <%= link_to "House Ads", admin_root_path, class: "brand" %>
+      <nav>
+        <%= link_to "Dashboard", admin_root_path, class: ("current" if controller_name == "dashboard") %>
+        <%= link_to "Ads", admin_ads_path, class: ("current" if controller_name == "ads") %>
+        <%= link_to "+ New ad", new_admin_ad_path, class: "btn small" %>
+      </nav>
+    </header>
+    <main>
+      <% flash.each do |type, message| %>
+        <div class="flash <%= type %>"><%= message %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

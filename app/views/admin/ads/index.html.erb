@@ -1,0 +1,46 @@
+<% content_for :title, "Ads | House Ads" %>
+
+<div class="page-head">
+  <h1>Ads</h1>
+  <%= link_to "+ New ad", new_admin_ad_path, class: "btn" %>
+</div>
+
+<% if @ads.empty? %>
+  <div class="card empty">
+    <p>No ads yet.</p>
+    <%= link_to "Create your first ad", new_admin_ad_path, class: "btn" %>
+  </div>
+<% else %>
+  <div class="card flush">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th><th>Name</th><th>Placement</th><th>Status</th><th class="num">Weight</th>
+          <th class="num">Impressions</th><th class="num">Clicks</th><th class="num">CTR</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @ads.each do |ad| %>
+          <% imp, clk = @totals.fetch(ad.id, [0, 0]) %>
+          <tr>
+            <td class="thumb-cell"><%= ad_thumb(ad) %></td>
+            <td>
+              <%= link_to ad.name, admin_ad_path(ad), class: "strong" %>
+              <div class="muted small truncate"><%= ad.target_url %></div>
+            </td>
+            <td><%= ad.placement %></td>
+            <td><%= status_badge(ad) %></td>
+            <td class="num"><%= ad.weight %></td>
+            <td class="num"><%= num(imp) %></td>
+            <td class="num"><%= num(clk) %></td>
+            <td class="num"><%= ctr(imp, clk) %></td>
+            <td class="actions">
+              <%= link_to "Edit", edit_admin_ad_path(ad), class: "btn small ghost" %>
+              <%= button_to (ad.active? ? "Pause" : "Activate"), toggle_admin_ad_path(ad), method: :patch, class: "btn small ghost" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

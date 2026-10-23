@@ -1,0 +1,23 @@
+<%# locals: (rows:, title:, empty: "No data for this period.") %>
+<section class="card">
+  <h2><%= title %></h2>
+  <% if rows.empty? %>
+    <p class="muted"><%= empty %></p>
+  <% else %>
+    <table class="table compact">
+      <thead>
+        <tr><th></th><th class="num">Impressions</th><th class="num">Clicks</th><th class="num">CTR</th></tr>
+      </thead>
+      <tbody>
+        <% rows.each do |label, imp, clk| %>
+          <tr>
+            <td><%= label %></td>
+            <td class="num"><%= num(imp) %></td>
+            <td class="num"><%= num(clk) %></td>
+            <td class="num"><%= ctr(imp, clk) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>

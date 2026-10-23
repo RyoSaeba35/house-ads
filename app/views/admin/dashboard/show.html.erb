@@ -1,0 +1,45 @@
+<% content_for :title, "Dashboard | House Ads" %>
+
+<div class="page-head">
+  <h1>Dashboard</h1>
+  <div class="pills"><%= period_links(@period, ->(p) { admin_root_path(period: p) }) %></div>
+</div>
+
+<div class="cards">
+  <div class="stat"><span>Impressions</span><strong><%= num(@totals[0]) %></strong></div>
+  <div class="stat"><span>Clicks</span><strong><%= num(@totals[1]) %></strong></div>
+  <div class="stat"><span>CTR</span><strong><%= ctr(@totals[0], @totals[1]) %></strong></div>
+  <div class="stat"><span>Live ads</span><strong><%= @live_count %></strong></div>
+</div>
+
+<div class="charts">
+  <%= render "admin/shared/chart", series: @series, index: 1, title: "Impressions per day", kind: "imp" %>
+  <%= render "admin/shared/chart", series: @series, index: 2, title: "Clicks per day", kind: "clk" %>
+</div>
+
+<section class="card">
+  <h2>Ads</h2>
+  <% if @by_ad.empty? %>
+    <p class="muted">No impressions yet for this period.</p>
+  <% else %>
+    <table class="table compact">
+      <thead>
+        <tr><th></th><th>Ad</th><th class="num">Impressions</th><th class="num">Clicks</th><th class="num">CTR</th></tr>
+      </thead>
+      <tbody>
+        <% @by_ad.each do |ad_id, imp, clk| %>
+          <% ad = @ads[ad_id] %>
+          <tr>
+            <td class="thumb-cell"><%= ad_thumb(ad, "thumb sm") %></td>
+            <td><%= ad ? link_to(ad.name, admin_ad_path(ad, period: @period)) : "Deleted ad ##{ad_id}" %></td>
+            <td class="num"><%= num(imp) %></td>
+            <td class="num"><%= num(clk) %></td>
+            <td class="num"><%= ctr(imp, clk) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>
+
+<%= render "admin/shared/breakdown", rows: @by_app, title: "By app / website" %>

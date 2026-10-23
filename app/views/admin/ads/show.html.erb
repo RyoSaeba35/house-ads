@@ -1,0 +1,46 @@
+<% content_for :title, "#{@ad.name} | House Ads" %>
+
+<div class="page-head">
+  <div>
+    <%= link_to "← Ads", admin_ads_path, class: "muted small" %>
+    <h1><%= @ad.name %> <%= status_badge(@ad) %></h1>
+  </div>
+  <div class="actions">
+    <%= link_to "Edit", edit_admin_ad_path(@ad), class: "btn ghost" %>
+    <%= button_to (@ad.active? ? "Pause" : "Activate"), toggle_admin_ad_path(@ad), method: :patch, class: "btn ghost" %>
+    <%= button_to "Delete", admin_ad_path(@ad), method: :delete, class: "btn danger",
+          form: { onsubmit: "return confirm('Delete this ad and all its stats?')" } %>
+  </div>
+</div>
+
+<div class="ad-detail card">
+  <div class="preview <%= @ad.placement %>"><%= ad_thumb(@ad, "preview-img") %></div>
+  <dl>
+    <dt>Target</dt><dd><%= link_to @ad.target_url, @ad.target_url, target: "_blank", rel: "noopener" %></dd>
+    <dt>Placement</dt><dd><%= @ad.placement %> (aspect <%= @ad.aspect_ratio %>)</dd>
+    <dt>Weight</dt><dd><%= @ad.weight %></dd>
+    <dt>Label</dt><dd><%= @ad.label %></dd>
+    <dt>Schedule</dt><dd><%= fmt_time(@ad.starts_at) %> to <%= fmt_time(@ad.ends_at) %></dd>
+    <dt>Shown in</dt><dd><%= @ad.app_keys.any? ? @ad.app_keys.join(", ") : "all apps and websites" %></dd>
+    <dt>Hidden in</dt><dd><%= @ad.target_app_key || "-" %></dd>
+    <dt>All time</dt><dd><%= num(@all_time[0]) %> impressions, <%= num(@all_time[1]) %> clicks, CTR <%= ctr(*@all_time) %></dd>
+  </dl>
+</div>
+
+<div class="page-head">
+  <h2>Stats</h2>
+  <div class="pills"><%= period_links(@period, ->(p) { admin_ad_path(@ad, period: p) }) %></div>
+</div>
+
+<div class="cards">
+  <div class="stat"><span>Impressions</span><strong><%= num(@totals[0]) %></strong></div>
+  <div class="stat"><span>Clicks</span><strong><%= num(@totals[1]) %></strong></div>
+  <div class="stat"><span>CTR</span><strong><%= ctr(*@totals) %></strong></div>
+</div>
+
+<div class="charts">
+  <%= render "admin/shared/chart", series: @series, index: 1, title: "Impressions per day", kind: "imp" %>
+  <%= render "admin/shared/chart", series: @series, index: 2, title: "Clicks per day", kind: "clk" %>
+</div>
+
+<%= render "admin/shared/breakdown", rows: @by_app, title: "By app / website" %>

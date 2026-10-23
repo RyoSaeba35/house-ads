@@ -1,0 +1,8 @@
+<% content_for :title, "Edit #{@ad.name} | House Ads" %>
+<div class="page-head">
+  <div>
+    <%= link_to "← #{@ad.name}", admin_ad_path(@ad), class: "muted small" %>
+    <h1>Edit ad</h1>
+  </div>
+</div>
+<%= render "form", ad: @ad %>

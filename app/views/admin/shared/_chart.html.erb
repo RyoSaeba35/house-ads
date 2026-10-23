@@ -1,0 +1,21 @@
+<%# locals: (series:, index:, title:, kind: "imp") %>
+<% values = series.map { |row| row[index] } %>
+<% max = values.max.to_i %>
+<div class="chart">
+  <div class="chart-head">
+    <span><%= title %></span>
+    <span class="muted">max <%= num(max) %>/day</span>
+  </div>
+  <div class="bars">
+    <% series.each do |row| %>
+      <% height = max.zero? ? 0 : (row[index] * 100.0 / max).round(1) %>
+      <div class="bar" title="<%= row[0].strftime("%d/%m") %>: <%= num(row[index]) %>">
+        <span class="<%= kind %>" style="height: <%= height %>%"></span>
+      </div>
+    <% end %>
+  </div>
+  <div class="axis">
+    <span><%= series.first[0].strftime("%d/%m") %></span>
+    <span><%= series.last[0].strftime("%d/%m") %></span>
+  </div>
+</div>
