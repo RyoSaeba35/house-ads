@@ -1,5 +1,6 @@
 class AdDailyStat < ApplicationRecord
   UNKNOWN_APP = "unknown".freeze
+  OTHER_PLACEMENT = "other".freeze
   SUMS = [
     Arel.sql("COALESCE(SUM(impressions), 0)"),
     Arel.sql("COALESCE(SUM(clicks), 0)")
@@ -11,13 +12,18 @@ class AdDailyStat < ApplicationRecord
     key.to_s.downcase.gsub(/[^a-z0-9_-]/, "").first(40).presence || UNKNOWN_APP
   end
 
-  # Atomic counter upsert: one row per ad, per day, per app.
-  def self.track!(ad_id:, kind:, app_key:)
+  def self.normalize_placement(value)
+    Ad.valid_placement(value) || OTHER_PLACEMENT
+  end
+
+  # Atomic counter upsert: one row per ad, per day, per app, per placement.
+  def self.track!(ad_id:, kind:, app_key:, placement:)
     impressions, clicks = kind.to_s == "click" ? [0, 1] : [1, 0]
-    sql = sanitize_sql_array([<<~SQL, ad_id.to_i, Time.zone.today, normalize_app_key(app_key), impressions, clicks])
-      INSERT INTO ad_daily_stats (ad_id, day, app_key, impressions, clicks, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, NOW(), NOW())
-      ON CONFLICT (ad_id, day, app_key) DO UPDATE SET
+    values = [ad_id.to_i, Time.zone.today, normalize_app_key(app_key), normalize_placement(placement), impressions, clicks]
+    sql = sanitize_sql_array([<<~SQL, *values])
+      INSERT INTO ad_daily_stats (ad_id, day, app_key, placement, impressions, clicks, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+      ON CONFLICT (ad_id, day, app_key, placement) DO UPDATE SET
         impressions = ad_daily_stats.impressions + EXCLUDED.impressions,
         clicks = ad_daily_stats.clicks + EXCLUDED.clicks,
         updated_at = NOW()

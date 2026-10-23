@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_102540) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,14 +50,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_102540) do
     t.integer "clicks", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["ad_id", "day", "app_key"], name: "index_ad_daily_stats_on_ad_id_and_day_and_app_key", unique: true
+    t.string "placement", default: "banner", null: false
+    t.index ["ad_id", "day", "app_key", "placement"], name: "index_ad_daily_stats_uniqueness", unique: true
     t.index ["day"], name: "index_ad_daily_stats_on_day"
   end
 
   create_table "ads", force: :cascade do |t|
     t.string "name", null: false
     t.string "target_url", null: false
-    t.string "placement", default: "banner", null: false
     t.integer "weight", default: 10, null: false
     t.boolean "active", default: true, null: false
     t.datetime "starts_at"
@@ -68,7 +68,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_102540) do
     t.string "alt_text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["placement", "active"], name: "index_ads_on_placement_and_active"
+    t.boolean "banner_enabled", default: false, null: false
+    t.boolean "square_enabled", default: false, null: false
+    t.boolean "interstitial_enabled", default: false, null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

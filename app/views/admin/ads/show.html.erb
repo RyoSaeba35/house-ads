@@ -13,11 +13,9 @@
   </div>
 </div>
 
-<div class="ad-detail card">
-  <div class="preview <%= @ad.placement %>"><%= ad_thumb(@ad, "preview-img") %></div>
+<div class="card">
   <dl>
     <dt>Target</dt><dd><%= link_to @ad.target_url, @ad.target_url, target: "_blank", rel: "noopener" %></dd>
-    <dt>Placement</dt><dd><%= @ad.placement %> (aspect <%= @ad.aspect_ratio %>)</dd>
     <dt>Weight</dt><dd><%= @ad.weight %></dd>
     <dt>Label</dt><dd><%= @ad.label %></dd>
     <dt>Schedule</dt><dd><%= fmt_time(@ad.starts_at) %> to <%= fmt_time(@ad.ends_at) %></dd>
@@ -25,6 +23,27 @@
     <dt>Hidden in</dt><dd><%= @ad.target_app_key || "-" %></dd>
     <dt>All time</dt><dd><%= num(@all_time[0]) %> impressions, <%= num(@all_time[1]) %> clicks, CTR <%= ctr(*@all_time) %></dd>
   </dl>
+</div>
+
+<div class="placements">
+  <% Ad::PLACEMENTS.each do |placement| %>
+    <div class="placement-box card <%= 'off' unless @ad.serves?(placement) %>">
+      <div class="placement-head">
+        <strong><%= placement.capitalize %></strong>
+        <% if @ad.serves?(placement) %>
+          <span class="badge ok">on</span>
+        <% else %>
+          <span class="badge muted">off</span>
+        <% end %>
+      </div>
+      <% if @ad.image_for(placement).attached? %>
+        <div class="current-image <%= placement %>"><%= ad_thumb(@ad, "preview-img", placement: placement) %></div>
+        <div class="muted small">ratio <%= @ad.aspect_ratio(placement) %> · suggested <%= Ad::SUGGESTED_SIZE[placement] %></div>
+      <% else %>
+        <p class="muted small">No image. Suggested <%= Ad::SUGGESTED_SIZE[placement] %>.</p>
+      <% end %>
+    </div>
+  <% end %>
 </div>
 
 <div class="page-head">
@@ -43,4 +62,5 @@
   <%= render "admin/shared/chart", series: @series, index: 2, title: "Clicks per day", kind: "clk" %>
 </div>
 
+<%= render "admin/shared/breakdown", rows: @by_placement, title: "By placement" %>
 <%= render "admin/shared/breakdown", rows: @by_app, title: "By app / website" %>

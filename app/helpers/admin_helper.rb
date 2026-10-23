@@ -22,10 +22,21 @@ module AdminHelper
     tag.span(label, class: "badge #{kind}")
   end
 
-  def ad_thumb(ad, css = "thumb")
-    return tag.div(class: "#{css} empty-thumb") unless ad&.image&.attached?
+  def ad_thumb(ad, css = "thumb", placement: nil)
+    image = ad && (placement ? ad.image_for(placement) : ad.preview_image)
+    return tag.div(class: "#{css} empty-thumb") unless image&.attached?
 
-    image_tag url_for(ad.image), class: css, alt: ad.alt_text.presence || ad.name, loading: "lazy"
+    image_tag url_for(image), class: css, alt: ad.alt_text.presence || ad.name, loading: "lazy"
+  end
+
+  def placement_badges(ad)
+    safe_join(Ad::PLACEMENTS.map do |placement|
+      if ad.serves?(placement)
+        tag.span(placement, class: "badge ok")
+      elsif ad.image_for(placement).attached?
+        tag.span(placement, class: "badge muted", title: "Image uploaded but not ticked")
+      end
+    end.compact, " ")
   end
 
   def period_links(current, path_builder)

@@ -1,11 +1,13 @@
 module Admin
   class AdsController < BaseController
     PERIODS = %w[7 30 90].freeze
+    FIELDS = (%i[name target_url weight active starts_at ends_at app_keys_list target_app_key label alt_text] +
+              Ad::PLACEMENTS.flat_map { |p| [:"#{p}_enabled", :"#{p}_image"] }).freeze
 
     before_action :set_ad, only: %i[show edit update destroy toggle]
 
     def index
-      @ads = Ad.with_attached_image.order(active: :desc, created_at: :desc)
+      @ads = Ad.with_all_images.order(active: :desc, created_at: :desc)
       @totals = AdDailyStat.breakdown(AdDailyStat.all, :ad_id).to_h { |id, imp, clk| [id, [imp, clk]] }
     end
 
@@ -17,12 +19,13 @@ module Admin
       scope = @ad.daily_stats.where(day: @from..@to)
       @totals = AdDailyStat.totals(scope)
       @series = AdDailyStat.daily_series(scope, from: @from, to: @to)
+      @by_placement = AdDailyStat.breakdown(scope, :placement)
       @by_app = AdDailyStat.breakdown(scope, :app_key)
       @all_time = AdDailyStat.totals(@ad.daily_stats)
     end
 
     def new
-      @ad = Ad.new(placement: params[:placement].presence_in(Ad::PLACEMENTS) || "banner")
+      @ad = Ad.new(banner_enabled: true)
     end
 
     def create
@@ -57,13 +60,16 @@ module Admin
     private
 
     def set_ad
-      @ad = Ad.find(params[:id])
+      @ad = Ad.with_all_images.find(params[:id])
     end
 
+    # Empty file fields keep the current image.
     def ad_params
-      permitted = params.expect(ad: %i[name target_url placement weight active starts_at ends_at
-                                       app_keys_list target_app_key label alt_text image])
-      permitted.delete(:image) if permitted[:image].blank?
+      permitted = params.expect(ad: FIELDS)
+      Ad::PLACEMENTS.each do |placement|
+        key = :"#{placement}_image"
+        permitted.delete(key) if permitted[key].blank?
+      end
       permitted
     end
   end

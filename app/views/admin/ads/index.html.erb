@@ -15,7 +15,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th></th><th>Name</th><th>Placement</th><th>Status</th><th class="num">Weight</th>
+          <th></th><th>Name</th><th>Placements</th><th>Status</th><th class="num">Weight</th>
           <th class="num">Impressions</th><th class="num">Clicks</th><th class="num">CTR</th><th></th>
         </tr>
       </thead>
@@ -28,7 +28,7 @@
               <%= link_to ad.name, admin_ad_path(ad), class: "strong" %>
               <div class="muted small truncate"><%= ad.target_url %></div>
             </td>
-            <td><%= ad.placement %></td>
+            <td><%= placement_badges(ad) %></td>
             <td><%= status_badge(ad) %></td>
             <td class="num"><%= ad.weight %></td>
             <td class="num"><%= num(imp) %></td>
