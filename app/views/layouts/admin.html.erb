@@ -13,6 +13,7 @@
       <nav>
         <%= link_to "Dashboard", admin_root_path, class: ("current" if controller_name == "dashboard") %>
         <%= link_to "Ads", admin_ads_path, class: ("current" if controller_name == "ads") %>
+        <%= link_to "Docs", admin_docs_path, class: ("current" if controller_name == "docs") %>
         <%= link_to "+ New ad", new_admin_ad_path, class: "btn small" %>
       </nav>
     </header>

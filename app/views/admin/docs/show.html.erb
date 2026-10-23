@@ -1,0 +1,183 @@
+<% content_for :title, "Docs | House Ads" %>
+<% s = doc_snippets(@base) %>
+
+<div class="page-head">
+  <h1>Docs</h1>
+  <span class="muted small">Server: <code><%= @base %></code></span>
+</div>
+
+<div class="docs">
+  <nav class="toc card">
+    <strong>Contents</strong>
+    <a href="#how">How it works</a>
+    <a href="#try">Try it</a>
+    <a href="#api">API reference</a>
+    <a href="#flutter">Flutter</a>
+    <a href="#levelplay">LevelPlay fallback</a>
+    <a href="#web">Websites</a>
+    <a href="#images">Images</a>
+    <a href="#rules">Good practice</a>
+  </nav>
+
+  <div class="doc-body">
+    <section class="card" id="how">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><strong>Create an ad</strong> in <%= link_to "Ads", admin_ads_path %>: a link, and up to 3 images (banner, square, interstitial). Tick the formats it should appear in.</li>
+        <li>Each app or site asks <code>GET /api/v1/ads?placement=…&amp;app=…</code> and receives every live ad for that format.</li>
+        <li>The client picks one at random, weighted by <code>weight</code>, shows the image and sends an <strong>impression</strong> when it's visible.</li>
+        <li>On tap it opens <code>click_url</code>: the server counts the <strong>click</strong> and redirects to your link.</li>
+        <li>Stats appear on the <%= link_to "Dashboard", admin_root_path %>, split by ad, placement and app.</li>
+      </ol>
+      <p class="muted">Clients cache the list for 15 minutes, so changes made here reach apps within ~15 minutes, with no app update.</p>
+    </section>
+
+    <section class="card" id="try">
+      <h2>Try it</h2>
+      <p class="muted">Calls the live API exactly like an app would. Nothing is counted.</p>
+      <div class="try-form">
+        <label>Placement
+          <select id="try-placement">
+            <% Ad::PLACEMENTS.each do |p| %><option value="<%= p %>"><%= p %></option><% end %>
+          </select>
+        </label>
+        <label>App key
+          <input id="try-app" type="text" value="test" list="known-apps">
+          <datalist id="known-apps"><% @app_keys.each do |k| %><option value="<%= k %>"><% end %></datalist>
+        </label>
+        <button type="button" class="btn" id="try-run">Send request</button>
+      </div>
+      <div id="try-url" class="muted small mono"></div>
+      <div class="try-out">
+        <div id="try-preview" class="try-preview muted small">Run a request to see the ads.</div>
+        <pre id="try-json" class="try-json"></pre>
+      </div>
+    </section>
+
+    <section class="card" id="api">
+      <h2>API reference</h2>
+      <p>No API key needed: the API is public and read-only. CORS is open, so websites can call it directly.</p>
+
+      <h3><span class="method get">GET</span> /api/v1/ads</h3>
+      <table class="table compact params">
+        <tr><td><code>placement</code></td><td><code>banner</code> (default), <code>square</code> or <code>interstitial</code>. Only ads with that format ticked are returned.</td></tr>
+        <tr><td><code>app</code></td><td>Your app or site key (<code>fidele</code>, <code>sideby</code>, <code>portfolio</code>…). Used for targeting ("Only show in", "Hide in") and stats. Lowercase letters, digits, <code>-</code> and <code>_</code>.</td></tr>
+      </table>
+      <%= code_block s[:list], lang: "bash" %>
+      <%= code_block s[:response], lang: "json" %>
+      <table class="table compact params">
+        <tr><td><code>aspect_ratio</code></td><td>Width ÷ height of this image. Use it to size the ad box so nothing is cropped.</td></tr>
+        <tr><td><code>weight</code></td><td>Relative chance of being picked. 20 shows twice as often as 10.</td></tr>
+        <tr><td><code>label</code></td><td>Display it on the ad ("Publicité" / "Lien affilié").</td></tr>
+        <tr><td><code>click_url</code></td><td>Open this on tap, never the final link directly, or the click isn't counted.</td></tr>
+        <tr><td><code>impression_url</code></td><td>POST once, when the ad is actually visible.</td></tr>
+        <tr><td><code>ttl</code></td><td>Seconds the client may cache the list.</td></tr>
+      </table>
+
+      <h3><span class="method post">POST</span> /api/v1/ads/:id/impression</h3>
+      <p>Counts one impression. Use the <code>impression_url</code> from the response, it already contains <code>app</code> and <code>placement</code>. Returns <code>204</code>.</p>
+      <%= code_block s[:impression], lang: "bash" %>
+
+      <h3><span class="method get">GET</span> /r/:id</h3>
+      <p>Counts one click and redirects (302) to the ad's target. Bots and link previews (WhatsApp, Slack, curl…) are not counted.</p>
+    </section>
+
+    <section class="card" id="flutter">
+      <h2>Flutter</h2>
+      <p><strong>1.</strong> Copy <code>flutter/lib/house_ads/</code> from the house-ads repo into your app's <code>lib/</code> (2 files).</p>
+      <p><strong>2.</strong> Add the packages:</p>
+      <%= code_block s[:pubspec], lang: "bash" %>
+      <p><strong>3.</strong> Allow opening links on Android 11+:</p>
+      <%= code_block s[:manifest], lang: "xml" %>
+      <p><strong>4.</strong> Init once in <code>main.dart</code>:</p>
+      <%= code_block s[:init], lang: "dart" %>
+      <p><strong>5.</strong> Place ads anywhere:</p>
+      <%= code_block s[:widgets], lang: "dart" %>
+      <p class="muted">If the server is down or no ad matches, the widgets render nothing. They can't break your app.</p>
+    </section>
+
+    <section class="card" id="levelplay">
+      <h2>LevelPlay fallback</h2>
+      <p>House ads pay nothing per view, so show them only when the ad network has no ad to fill the slot:</p>
+      <%= code_block s[:fallback], lang: "dart" %>
+    </section>
+
+    <section class="card" id="web">
+      <h2>Websites</h2>
+      <p><strong>Drop-in snippet.</strong> Put the div where the ad goes. Several divs on one page are fine.</p>
+      <%= code_block s[:web], lang: "html" %>
+      <p class="muted">Supports <code>data-placement</code> and <code>data-app</code> (defaults to the site's hostname). Impressions are counted when half the ad is visible. Links get <code>rel="sponsored"</code>.</p>
+      <p><strong>Your own code</strong> (React, Next.js…):</p>
+      <%= code_block s[:web_fetch], lang: "js" %>
+    </section>
+
+    <section class="card" id="images">
+      <h2>Images</h2>
+      <table class="table compact">
+        <thead><tr><th>Placement</th><th>Suggested size</th><th>Ratio</th><th>Typical use</th></tr></thead>
+        <tbody>
+          <tr><td>banner</td><td>1200×200</td><td>6 : 1</td><td>Bottom of a screen, between sections</td></tr>
+          <tr><td>square</td><td>1080×1080</td><td>1 : 1</td><td>Inside lists, settings, sidebars</td></tr>
+          <tr><td>interstitial</td><td>1080×1920</td><td>9 : 16</td><td>Full screen, between two actions</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">The shape matters more than the exact pixels: 2400×400 works like 1200×200, just sharper. Keep the top-left corner free, the "Publicité" label sits there. PNG, JPEG, WebP or GIF, max 2 MB.</p>
+    </section>
+
+    <section class="card" id="rules">
+      <h2>Good practice</h2>
+      <ul class="steps">
+        <li>Use one <strong>app key per app/site</strong> and never change it, or stats get split.</li>
+        <li>When an ad promotes one of your apps, set <strong>Hide in</strong> to that app's key.</li>
+        <li>Test with <code>app=test</code> so test traffic stays apart from real stats.</li>
+        <li>Interstitials: at most once per session or every few actions.</li>
+        <li>French law: every ad must be identifiable, keep the label. Check each referral program's terms before using its link in ads.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var code = btn.closest(".code").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(function () {
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+      });
+    });
+  });
+
+  (function () {
+    var run = document.getElementById("try-run");
+    var out = document.getElementById("try-json");
+    var preview = document.getElementById("try-preview");
+    var urlBox = document.getElementById("try-url");
+
+    function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+    run.addEventListener("click", function () {
+      var placement = document.getElementById("try-placement").value;
+      var app = document.getElementById("try-app").value.trim() || "test";
+      var url = "/api/v1/ads?placement=" + encodeURIComponent(placement) + "&app=" + encodeURIComponent(app);
+      urlBox.textContent = "GET " + location.origin + url;
+      out.textContent = "Loading…";
+      fetch(url, { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          out.textContent = JSON.stringify(data, null, 2);
+          var ads = data.ads || [];
+          if (!ads.length) {
+            preview.innerHTML = "No ad for this placement and app.";
+            return;
+          }
+          preview.innerHTML = ads.map(function (ad) {
+            return '<figure><img src="' + esc(ad.image_url) + '" alt="' + esc(ad.alt) +
+              '" style="aspect-ratio:' + ad.aspect_ratio + '"><figcaption>#' + ad.id + " " + esc(ad.name) +
+              " · weight " + ad.weight + "</figcaption></figure>";
+          }).join("");
+        })
+        .catch(function (e) { out.textContent = "Error: " + e; });
+    });
+  })();
+</script>

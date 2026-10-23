@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   # Admin (HTTP basic auth: ADMIN_USER / ADMIN_PASSWORD)
   namespace :admin do
     root "dashboard#show"
+    get "docs", to: "docs#show"
     resources :ads do
       patch :toggle, on: :member
     end
