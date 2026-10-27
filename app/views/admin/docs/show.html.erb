@@ -23,7 +23,7 @@
     <section class="card" id="how">
       <h2>How it works</h2>
       <ol class="steps">
-        <li><strong>Create an ad</strong> in <%= link_to "Ads", admin_ads_path %>: a link, and up to 3 images (banner, square, interstitial). Tick the formats it should appear in.</li>
+        <li><strong>Create an ad</strong> in <%= link_to "Ads", admin_ads_path %>: a link, and up to 4 images (banner, square, interstitial, rail). Tick the formats it should appear in.</li>
         <li>Each app or site asks <code>GET /api/v1/ads?placement=…&amp;app=…</code> and receives every live ad for that format.</li>
         <li>The client picks one at random, weighted by <code>weight</code>, shows the image and sends an <strong>impression</strong> when it's visible.</li>
         <li>On tap it opens <code>click_url</code>: the server counts the <strong>click</strong> and redirects to your link.</li>
@@ -60,7 +60,7 @@
 
       <h3><span class="method get">GET</span> /api/v1/ads</h3>
       <table class="table compact params">
-        <tr><td><code>placement</code></td><td><code>banner</code> (default), <code>square</code> or <code>interstitial</code>. Only ads with that format ticked are returned.</td></tr>
+        <tr><td><code>placement</code></td><td><code>banner</code> (default), <code>square</code>, <code>interstitial</code> or <code>rail</code>. Only ads with that format ticked are returned.</td></tr>
         <tr><td><code>app</code></td><td>Your app or site key (<code>fidele</code>, <code>sideby</code>, <code>portfolio</code>…). Used for targeting ("Only show in", "Hide in") and stats. Lowercase letters, digits, <code>-</code> and <code>_</code>.</td></tr>
       </table>
       <%= code_block s[:list], lang: "bash" %>
@@ -119,6 +119,7 @@
           <tr><td>banner</td><td>1200×200</td><td>6 : 1</td><td>Bottom of a screen, between sections</td></tr>
           <tr><td>square</td><td>1080×1080</td><td>1 : 1</td><td>Inside lists, settings, sidebars</td></tr>
           <tr><td>interstitial</td><td>1080×1920</td><td>9 : 16</td><td>Full screen, between two actions</td></tr>
+          <tr><td>rail</td><td>600×1200</td><td>1 : 2</td><td>Side columns on laptop and desktop (1200px+)</td></tr>
         </tbody>
       </table>
       <p class="muted">The shape matters more than the exact pixels: 2400×400 works like 1200×200, just sharper. Keep the top-left corner free, the "Publicité" label sits there. PNG, JPEG, WebP or GIF, max 2 MB.</p>

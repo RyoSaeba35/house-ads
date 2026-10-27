@@ -1,9 +1,9 @@
 class Ad < ApplicationRecord
-  PLACEMENTS = %w[banner square interstitial].freeze
+  PLACEMENTS = %w[banner square interstitial rail].freeze
   IMAGE_TYPES = %w[image/png image/jpeg image/webp image/gif].freeze
   MAX_IMAGE_SIZE = 2.megabytes
-  DEFAULT_ASPECT = { "banner" => 6.0, "square" => 1.0, "interstitial" => 0.5625 }.freeze
-  SUGGESTED_SIZE = { "banner" => "1200×200", "square" => "1080×1080", "interstitial" => "1080×1920" }.freeze
+  DEFAULT_ASPECT = { "banner" => 6.0, "square" => 1.0, "interstitial" => 0.5625, "rail" => 0.5 }.freeze
+  SUGGESTED_SIZE = { "banner" => "1200×200", "square" => "1080×1080", "interstitial" => "1080×1920", "rail" => "600×1200" }.freeze
 
   PLACEMENTS.each { |placement| has_one_attached :"#{placement}_image" }
   has_many :daily_stats, class_name: "AdDailyStat", inverse_of: :ad
