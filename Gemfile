@@ -43,4 +43,4 @@ group :development do
   gem "web-console"
 end
 
-gem "aws-sdk-s3", "~> 1.235", require: false
+gem "aws-sdk-s3", "~> 1.240", require: false
